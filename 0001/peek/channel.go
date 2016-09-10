@@ -1,6 +1,6 @@
 package peek
 
-// A Channel with peek support.
+// A wrapper of go read channels with peek support.
 type Channel struct {
 	validHead bool
 	head      int
