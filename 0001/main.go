@@ -27,17 +27,35 @@ func main() {
 // Returns an error if any of the bases is less than 1 or if max is
 // negative.
 func sumUniqMultiples(bases []int, max int) (int, error) {
-	c, err := uniqMultiples(bases, max)
-	if err != nil {
+	if err := checkBases(bases); err != nil {
+		return 0, err
+	}
+	if err := checkMax(max); err != nil {
 		return 0, err
 	}
 
 	s := 0
-	for n := range c {
+	for n := range uniqMultiples(bases, max) {
 		s += n
 	}
 
 	return s, nil
+}
+
+func checkBases(bases []int) error {
+	for i, b := range bases {
+		if b < 1 {
+			return fmt.Errorf("invalid bases: base %d is < 1 (%d)", i, b)
+		}
+	}
+	return nil
+}
+
+func checkMax(m int) error {
+	if m < 0 {
+		return fmt.Errorf("invalid max %d: cannot be negative", m)
+	}
+	return nil
 }
 
 // Returns a channel to receive the multiples of every element of
@@ -49,11 +67,8 @@ func sumUniqMultiples(bases []int, max int) (int, error) {
 // the numbers 3, 5, 6, 9, 10, 12, 15 and 18 in this same order.  Note
 // how only one 15 is received even though 15 is multiple of both 3 and
 // 5.
-func uniqMultiples(countings []int, max int) (<-chan int, error) {
-	ms, err := multiplesForAll(countings, max)
-	if err != nil {
-		return nil, err
-	}
+func uniqMultiples(countings []int, max int) <-chan int {
+	ms := multiplesForAll(countings, max)
 
 	sorted := make(chan int)
 	go func() {
@@ -90,20 +105,16 @@ func uniqMultiples(countings []int, max int) (<-chan int, error) {
 		}
 		close(sorted)
 	}()
-	return sorted, nil
+	return sorted
 }
 
-func multiplesForAll(countings []int, max int) ([]<-chan int, error) {
+func multiplesForAll(countings []int, max int) []<-chan int {
 	ms := make([]<-chan int, 0, len(countings))
 	for _, b := range countings {
-		c, err := multiples(b, max)
-		if err != nil {
-			// TODO close already opened channels
-			return nil, err
-		}
+		c := multiples(b, max)
 		ms = append(ms, c)
 	}
-	return ms, nil
+	return ms
 }
 
 // Returns a channel to receive the multiples of counting, up to,
@@ -114,13 +125,7 @@ func multiplesForAll(countings []int, max int) ([]<-chan int, error) {
 //
 // Example: multiples(3, 12) will return a channel with the numbers 3,
 // 6, 9, in this same order.
-func multiples(counting int, max int) (<-chan int, error) {
-	if counting < 1 {
-		return nil, fmt.Errorf("multiples: invalid counting number: %d", counting)
-	}
-	if max < 0 {
-		return nil, fmt.Errorf("multiples: max cannot be < 1, was %d", max)
-	}
+func multiples(counting int, max int) <-chan int {
 	multiples := make(chan int)
 	go func() {
 		i := 1
@@ -134,5 +139,5 @@ func multiples(counting int, max int) (<-chan int, error) {
 		}
 		close(multiples)
 	}()
-	return multiples, nil
+	return multiples
 }
