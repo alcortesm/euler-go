@@ -86,7 +86,7 @@ func TestSortedMultiplesOK(t *testing.T) {
 			expected: []int{3, 6, 9, 12, 15, 18},
 		}, {
 			wholes: []int{3, 7}, max: 20,
-			expected: []int{3, 6, 7, 9, 12, 14, 18},
+			expected: []int{3, 6, 7, 9, 12, 14, 15, 18},
 		},
 	} {
 		obtained := []int{}
@@ -94,10 +94,10 @@ func TestSortedMultiplesOK(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
 		for m := range ms {
 			obtained = append(obtained, m)
 		}
+		//fmt.Println("obtained", obtained)
 
 		if !reflect.DeepEqual(obtained, test.expected) {
 			t.Errorf("wholes = %v, max = %d\nexpected = %v\nobtained = %v\n",
@@ -117,7 +117,13 @@ func TestSortedMultiplesOKNoRepetitions(t *testing.T) {
 			expected: []int{1, 2, 3, 4, 5},
 		}, {
 			wholes: []int{3, 5}, max: 20,
-			expected: []int{3, 5, 6, 7, 9, 10, 12, 15, 18},
+			expected: []int{3, 5, 6, 9, 10, 12, 15, 18},
+		}, {
+			wholes: []int{3, 5, 7, 10}, max: 27,
+			expected: []int{3, 5, 6, 7, 9, 10, 12, 14, 15, 18, 20, 21, 24, 25},
+		}, {
+			wholes: []int{10, 7, 5, 3}, max: 27,
+			expected: []int{3, 5, 6, 7, 9, 10, 12, 14, 15, 18, 20, 21, 24, 25},
 		},
 	} {
 		obtained := []int{}
@@ -132,6 +138,54 @@ func TestSortedMultiplesOKNoRepetitions(t *testing.T) {
 
 		if !reflect.DeepEqual(obtained, test.expected) {
 			t.Errorf("wholes = %v, max = %d\nexpected = %v\nobtained = %v\n",
+				test.wholes, test.max, test.expected, obtained)
+		}
+	}
+}
+
+func TestSum(t *testing.T) {
+	for _, test := range [...]struct {
+		wholes   []int
+		max      int
+		expected int
+	}{
+		{
+			wholes:   []int{1},
+			max:      1,
+			expected: 0,
+		}, {
+			wholes:   []int{1},
+			max:      10,
+			expected: 45,
+		}, {
+			wholes:   []int{1, 2},
+			max:      5,
+			expected: 10,
+		}, {
+			wholes:   []int{3, 5},
+			max:      10,
+			expected: 23,
+		}, {
+			wholes:   []int{5, 3},
+			max:      10,
+			expected: 23,
+		}, {
+			wholes:   []int{5, 3, 11},
+			max:      100,
+			expected: 2560,
+		}, {
+			wholes:   []int{3, 5},
+			max:      1000,
+			expected: 233168,
+		},
+	} {
+		obtained, err := sum(test.wholes, test.max)
+		if err != nil {
+			t.Errorf("wholes = %v, max = %d\nexpected = %v\nerror = %v\n",
+				test.wholes, test.max, test.expected, err)
+		}
+		if obtained != test.expected {
+			t.Errorf("wholes = %v, max = %d\nexpected = %d\nobtained = %d\n",
 				test.wholes, test.max, test.expected, obtained)
 		}
 	}

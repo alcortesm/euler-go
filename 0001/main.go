@@ -1,8 +1,31 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 func main() {
+	s, err := sum([]int{3, 5}, 1000)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(s)
+}
+
+func sum(countings []int, max int) (int, error) {
+	c, err := sortedMultiples(countings, max)
+	if err != nil {
+		return 0, err
+	}
+
+	s := 0
+	for n := range c {
+		s += n
+	}
+
+	return s, nil
 }
 
 // Returns a channel to receive the multiples of every element of
@@ -22,8 +45,36 @@ func sortedMultiples(countings []int, max int) (<-chan int, error) {
 
 	sorted := make(chan int)
 	go func() {
-		for _, c := range ms {
-			sorted <- <-c
+		heads := make([]int, len(countings))
+		for {
+			min := 0
+			imin := -1
+			for i, _ := range heads {
+				if heads[i] == 0 {
+					heads[i] = <-ms[i]
+					if heads[i] == 0 {
+						continue
+					}
+				}
+
+				if imin == -1 {
+					min = heads[i]
+					imin = i
+					continue
+				}
+
+				if heads[i] == min {
+					heads[i] = 0 // remove repeated
+				} else if heads[i] < min {
+					min = heads[i]
+					imin = i
+				}
+			}
+			if imin == -1 {
+				break
+			}
+			sorted <- heads[imin]
+			heads[imin] = 0
 		}
 		close(sorted)
 	}()
