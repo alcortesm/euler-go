@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	s, err := sumUniqMultiplesOf([]int{3, 5}, 1000)
+	s, err := sumUniqMultiples([]int{3, 5}, 1000)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -16,7 +16,7 @@ func main() {
 
 // Returns the sum of all non repeted multiples of bases lower than max.
 //
-// For example: sumMultiplesOf([]int{3, 5}, 18) would be 60, this is,
+// For example: sumUniqMultiples([]int{3, 5}, 18) would be 60, this is,
 // the sum of:
 //
 // - 3, 6, 9, 12, 15 (multiples of 3 lower than 18)
@@ -26,7 +26,7 @@ func main() {
 //
 // Returns an error if any of the bases is less than 1 or if max is
 // negative.
-func sumUniqMultiplesOf(bases []int, max int) (int, error) {
+func sumUniqMultiples(bases []int, max int) (int, error) {
 	c, err := uniqMultiples(bases, max)
 	if err != nil {
 		return 0, err

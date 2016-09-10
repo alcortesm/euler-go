@@ -143,7 +143,7 @@ func TestSortedMultiplesOKNoRepetitions(t *testing.T) {
 	}
 }
 
-func TestSumMultiplesOf(t *testing.T) {
+func TestSumUniqMultiples(t *testing.T) {
 	for _, test := range [...]struct {
 		wholes   []int
 		max      int
@@ -179,7 +179,7 @@ func TestSumMultiplesOf(t *testing.T) {
 			expected: 233168,
 		},
 	} {
-		obtained, err := sumUniqMultiplesOf(test.wholes, test.max)
+		obtained, err := sumUniqMultiples(test.wholes, test.max)
 		if err != nil {
 			t.Errorf("wholes = %v, max = %d\nexpected = %v\nerror = %v\n",
 				test.wholes, test.max, test.expected, err)
