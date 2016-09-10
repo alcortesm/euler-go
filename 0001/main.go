@@ -36,7 +36,7 @@ func sumUniqMultiples(bases []int, max int) (int, error) {
 		return 0, err
 	}
 
-	ms := multiplesOfAll(bases, max)
+	ms := allMultiples(bases, max)
 
 	s := 0
 	for n := range uniqOfSorted(ms) {
@@ -60,6 +60,40 @@ func checkMax(m int) error {
 		return fmt.Errorf("invalid max %d: cannot be negative", m)
 	}
 	return nil
+}
+
+func allMultiples(bases []int, max int) []<-chan int {
+	ms := make([]<-chan int, 0, len(bases))
+	for _, b := range bases {
+		c := multiples(b, max)
+		ms = append(ms, c)
+	}
+	return ms
+}
+
+// Returns a channel to receive the multiples of counting, up to,
+// and not including, max.  The numbers are received over the channel in
+// increasing order.
+//
+// Counting must be a counting number and max must be positive.
+//
+// Example: multiples(3, 12) will return a channel with the numbers 3,
+// 6, 9, in this same order.
+func multiples(base int, max int) <-chan int {
+	multiples := make(chan int)
+	go func() {
+		i := 1
+		for {
+			m := i * base
+			if m >= max {
+				break
+			}
+			multiples <- m
+			i++
+		}
+		close(multiples)
+	}()
+	return multiples
 }
 
 // Returns a channel of unique and sorted integers that are the result of
@@ -123,38 +157,4 @@ func min(ps []peek.Peeker) (int, bool) {
 		}
 	}
 	return imin, found
-}
-
-func multiplesOfAll(countings []int, max int) []<-chan int {
-	ms := make([]<-chan int, 0, len(countings))
-	for _, b := range countings {
-		c := multiples(b, max)
-		ms = append(ms, c)
-	}
-	return ms
-}
-
-// Returns a channel to receive the multiples of counting, up to,
-// and not including, max.  The numbers are received over the channel in
-// increasing order.
-//
-// Counting must be a counting number and max must be positive.
-//
-// Example: multiples(3, 12) will return a channel with the numbers 3,
-// 6, 9, in this same order.
-func multiples(counting int, max int) <-chan int {
-	multiples := make(chan int)
-	go func() {
-		i := 1
-		for {
-			m := i * counting
-			if m >= max {
-				break
-			}
-			multiples <- m
-			i++
-		}
-		close(multiples)
-	}()
-	return multiples
 }
