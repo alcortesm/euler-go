@@ -36,7 +36,7 @@ func sumUniqMultiples(bases []int, max int) (int, error) {
 		return 0, err
 	}
 
-	ms := multiplesForAll(bases, max)
+	ms := multiplesOfAll(bases, max)
 
 	s := 0
 	for n := range uniqOfSorted(ms) {
@@ -125,7 +125,7 @@ func min(ps []peek.Peeker) (int, bool) {
 	return imin, found
 }
 
-func multiplesForAll(countings []int, max int) []<-chan int {
+func multiplesOfAll(countings []int, max int) []<-chan int {
 	ms := make([]<-chan int, 0, len(countings))
 	for _, b := range countings {
 		c := multiples(b, max)
