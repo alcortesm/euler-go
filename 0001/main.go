@@ -63,13 +63,13 @@ func checkMax(m int) error {
 // Returns a channel of uniq and sorted integers that are the result of
 // merging the contents of a slice of channels with sorted integers.
 func uniqOfSorted(cs []<-chan int) <-chan int {
-	sorted := make(chan int)
+	uniq := make(chan int)
 	go func() {
 		heads := make([]int, len(cs))
 		for {
 			min := 0
 			imin := -1
-			for i, _ := range heads {
+			for i := range heads {
 				if heads[i] == 0 {
 					heads[i] = <-cs[i]
 					if heads[i] == 0 {
@@ -93,12 +93,12 @@ func uniqOfSorted(cs []<-chan int) <-chan int {
 			if imin == -1 {
 				break
 			}
-			sorted <- heads[imin]
+			uniq <- heads[imin]
 			heads[imin] = 0
 		}
-		close(sorted)
+		close(uniq)
 	}()
-	return sorted
+	return uniq
 }
 
 func multiplesForAll(countings []int, max int) []<-chan int {
