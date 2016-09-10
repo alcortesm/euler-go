@@ -61,7 +61,7 @@ func checkMax(m int) error {
 }
 
 // Returns a channel of uniq and sorted integers that are the result of
-// merging the contents of a slice of channels with sorted integers.
+// merging the contents of a slice of channels holding sorted integers.
 func uniqOfSorted(cs []<-chan int) <-chan int {
 	uniq := make(chan int)
 	go func() {
