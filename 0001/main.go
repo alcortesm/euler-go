@@ -37,9 +37,10 @@ func sumUniqMultiples(bases []int, max int) (int, error) {
 	}
 
 	ms := allMultiples(bases, max)
+	uniq := uniqFromSorted(ms)
 
 	s := 0
-	for n := range uniqOfSorted(ms) {
+	for n := range uniq {
 		s += n
 	}
 
@@ -98,7 +99,7 @@ func multiples(base int, max int) <-chan int {
 
 // Returns a channel of unique and sorted integers that are the result of
 // merging the contents of a slice of channels holding sorted integers.
-func uniqOfSorted(cs []<-chan int) <-chan int {
+func uniqFromSorted(cs []<-chan int) <-chan int {
 	ps := peekersFromChannels(cs)
 	uniq := make(chan int)
 	go func() {
