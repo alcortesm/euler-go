@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+
+	"github.com/alcortesm/euler-go/0001/peek"
 )
 
 func main() {
@@ -60,45 +62,67 @@ func checkMax(m int) error {
 	return nil
 }
 
-// Returns a channel of uniq and sorted integers that are the result of
+// Returns a channel of unique and sorted integers that are the result of
 // merging the contents of a slice of channels holding sorted integers.
 func uniqOfSorted(cs []<-chan int) <-chan int {
+	ps := peekers(cs)
 	uniq := make(chan int)
 	go func() {
-		heads := make([]int, len(cs))
+		first := true
+		var last int
 		for {
-			min := 0
-			imin := -1
-			for i := range heads {
-				if heads[i] == 0 {
-					heads[i] = <-cs[i]
-					if heads[i] == 0 {
-						continue
-					}
-				}
-
-				if imin == -1 {
-					min = heads[i]
-					imin = i
-					continue
-				}
-
-				if heads[i] == min {
-					heads[i] = 0 // remove repeated
-				} else if heads[i] < min {
-					min = heads[i]
-					imin = i
-				}
-			}
-			if imin == -1 {
+			i, ok := min(ps)
+			if !ok {
 				break
 			}
-			uniq <- heads[imin]
-			heads[imin] = 0
+			n, _ := ps[i].Recv()
+			if first {
+				first = false
+				last = n
+				uniq <- n
+				continue
+			}
+			if n != last {
+				last = n
+				uniq <- n
+			}
 		}
 		close(uniq)
 	}()
 	return uniq
+}
+
+func peekers(cs []<-chan int) []peek.Peeker {
+	ps := make([]peek.Peeker, len(cs))
+	for i, c := range cs {
+		ps[i] = peek.NewChannel(c)
+	}
+	return ps
+}
+
+// Returns the index of the peeker with the smallest number and
+// true if a there was any number at all in the peekers.
+func min(ps []peek.Peeker) (int, bool) {
+	var found bool
+	var min int
+	var imin int
+	for i, p := range ps {
+		n, ok := p.Peek()
+		if !ok {
+			continue
+		}
+		if !found {
+			found = true
+			min = n
+			imin = i
+			continue
+		}
+		if n < min {
+			min = n
+			imin = i
+		}
+	}
+	return imin, found
 }
 
 func multiplesForAll(countings []int, max int) []<-chan int {
