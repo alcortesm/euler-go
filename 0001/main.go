@@ -65,7 +65,7 @@ func checkMax(m int) error {
 // Returns a channel of unique and sorted integers that are the result of
 // merging the contents of a slice of channels holding sorted integers.
 func uniqOfSorted(cs []<-chan int) <-chan int {
-	ps := peekers(cs)
+	ps := peekersFromChannels(cs)
 	uniq := make(chan int)
 	go func() {
 		first := true
@@ -92,7 +92,7 @@ func uniqOfSorted(cs []<-chan int) <-chan int {
 	return uniq
 }
 
-func peekers(cs []<-chan int) []peek.Peeker {
+func peekersFromChannels(cs []<-chan int) []peek.Peeker {
 	ps := make([]peek.Peeker, len(cs))
 	for i, c := range cs {
 		ps[i] = peek.NewChannel(c)
