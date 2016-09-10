@@ -106,10 +106,11 @@ func uniqFromSorted(cs []<-chan int) <-chan int {
 		first := true
 		var last int
 		for {
-			i, ok := min(ps)
-			if !ok {
+			ps = removeEmpties(ps)
+			if len(ps) == 0 {
 				break
 			}
+			i := indexOfMin(ps)
 			n, _ := ps[i].Recv()
 			if first {
 				first = false
@@ -135,27 +136,29 @@ func peekersFromChannels(cs []<-chan int) []peek.Peeker {
 	return ps
 }
 
-// Returns the index of the peeker with the smallest number and
-// true if a there was any number at all in the peekers.
-func min(ps []peek.Peeker) (int, bool) {
-	var found bool
-	var min int
-	var imin int
-	for i, p := range ps {
-		n, ok := p.Peek()
-		if !ok {
-			continue
+// returns a slice of peekers with all the peekers in ps that are not
+// empty.
+func removeEmpties(ps []peek.Peeker) []peek.Peeker {
+	ret := make([]peek.Peeker, 0, len(ps))
+	for _, p := range ps {
+		if _, ok := p.Peek(); ok {
+			ret = append(ret, p)
 		}
-		if !found {
-			found = true
-			min = n
-			imin = i
-			continue
-		}
+	}
+	return ret
+}
+
+// take a non empty slice of non empty peekers and returns the index of
+// the peeker with the smallest integer.
+func indexOfMin(ps []peek.Peeker) int {
+	min, _ := ps[0].Peek()
+	imin := 0
+	for i := 1; i < len(ps); i++ {
+		n, _ := ps[i].Peek()
 		if n < min {
 			min = n
 			imin = i
 		}
 	}
-	return imin, found
+	return imin
 }
