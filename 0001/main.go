@@ -16,16 +16,8 @@ func main() {
 	fmt.Println(s)
 }
 
-// Returns the sum of all non repeted multiples of bases lower than max.
-//
-// For example: sumUniqMultiples([]int{3, 5}, 18) would be 60, this is,
-// the sum of:
-//
-// - 3, 6, 9, 12, 15 (multiples of 3 lower than 18)
-//
-// - and 5, 10 (multiples of 5 lower than 18, not counting 15, as it is
-// already a multiple of 3).
-//
+// Returns the sum of all unique multiples, lower than max,  of the numbers in bases.
+// Example: sumUniqMultiples([]int{3, 5}, 18) would be 60 (3+5+6+9+10+12+15).
 // Returns an error if any of the bases is less than 1 or if max is
 // negative.
 func sumUniqMultiples(bases []int, max int) (int, error) {
@@ -37,13 +29,8 @@ func sumUniqMultiples(bases []int, max int) (int, error) {
 	}
 
 	ms := allMultiples(bases, max)
-	uniq := uniqFromSorted(ms)
-
-	s := 0
-	for n := range uniq {
-		s += n
-	}
-
+	u := uniq(ms)
+	s := sum(u)
 	return s, nil
 }
 
@@ -72,14 +59,8 @@ func allMultiples(bases []int, max int) []<-chan int {
 	return ms
 }
 
-// Returns a channel to receive the multiples of counting, up to,
-// and not including, max.  The numbers are received over the channel in
-// increasing order.
-//
-// Counting must be a counting number and max must be positive.
-//
-// Example: multiples(3, 12) will return a channel with the numbers 3,
-// 6, 9, in this same order.
+// Returns a channel and sends over it all the multiples of base, lower
+// than max, in ascending order.  Closes the channel when done.
 func multiples(base int, max int) <-chan int {
 	multiples := make(chan int)
 	go func() {
@@ -97,11 +78,11 @@ func multiples(base int, max int) <-chan int {
 	return multiples
 }
 
-// Returns a channel of unique and sorted integers that are the result of
-// merging the contents of a slice of channels holding sorted integers.
-func uniqFromSorted(cs []<-chan int) <-chan int {
+// Returns a channel of unique integers comming form a slice of channels
+// of sorted integers.
+func uniq(cs []<-chan int) <-chan int {
 	ps := peekersFromChannels(cs)
-	uniq := make(chan int)
+	ret := make(chan int)
 	go func() {
 		first := true
 		var last int
@@ -115,17 +96,17 @@ func uniqFromSorted(cs []<-chan int) <-chan int {
 			if first {
 				first = false
 				last = n
-				uniq <- n
+				ret <- n
 				continue
 			}
 			if n != last {
 				last = n
-				uniq <- n
+				ret <- n
 			}
 		}
-		close(uniq)
+		close(ret)
 	}()
-	return uniq
+	return ret
 }
 
 func peekersFromChannels(cs []<-chan int) []peek.Peeker {
@@ -136,8 +117,6 @@ func peekersFromChannels(cs []<-chan int) []peek.Peeker {
 	return ps
 }
 
-// returns a slice of peekers with all the peekers in ps that are not
-// empty.
 func removeEmpties(ps []peek.Peeker) []peek.Peeker {
 	ret := make([]peek.Peeker, 0, len(ps))
 	for _, p := range ps {
@@ -161,4 +140,12 @@ func indexOfMin(ps []peek.Peeker) int {
 		}
 	}
 	return imin
+}
+
+func sum(c <-chan int) int {
+	s := 0
+	for n := range c {
+		s += n
+	}
+	return s
 }

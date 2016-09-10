@@ -36,6 +36,10 @@ func TestSumUniqMultiples(t *testing.T) {
 			wholes:   []int{3, 5},
 			max:      1000,
 			expected: 233168,
+		}, {
+			wholes:   []int{3, 5, 11, 2},
+			max:      7,
+			expected: 20,
 		},
 	} {
 		obtained, err := sumUniqMultiples(test.wholes, test.max)
