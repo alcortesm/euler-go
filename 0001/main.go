@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	s, err := sum([]int{3, 5}, 1000)
+	s, err := sumUniqMultiplesOf([]int{3, 5}, 1000)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -14,8 +14,19 @@ func main() {
 	fmt.Println(s)
 }
 
-func sum(countings []int, max int) (int, error) {
-	c, err := sortedMultiples(countings, max)
+// Returns the sum of all non repeted multiples of bases lower than max.
+//
+// For example: sumMultiplesOf([]int{3, 4}, 16) would be the sum of:
+//
+// - 3, 6, 9, 12 (multiples of 3 lower than 16)
+//
+// - and 4, 8 (multiples of 4 lower than 16, not counting 12, as it is
+//   already a multiple of 3).
+//
+// Returns an error if any of the bases is less than 1 or if max is
+// negative.
+func sumUniqMultiplesOf(bases []int, max int) (int, error) {
+	c, err := uniqMultiples(bases, max)
 	if err != nil {
 		return 0, err
 	}
@@ -37,7 +48,7 @@ func sum(countings []int, max int) (int, error) {
 // the numbers 3, 5, 6, 9, 10, 12, 15 and 18 in this same order.  Note
 // how only one 15 is received even though 15 is multiple of both 3 and
 // 5.
-func sortedMultiples(countings []int, max int) (<-chan int, error) {
+func uniqMultiples(countings []int, max int) (<-chan int, error) {
 	ms, err := multiplesForAll(countings, max)
 	if err != nil {
 		return nil, err

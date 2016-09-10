@@ -90,7 +90,7 @@ func TestSortedMultiplesOK(t *testing.T) {
 		},
 	} {
 		obtained := []int{}
-		ms, err := sortedMultiples(test.wholes, test.max)
+		ms, err := uniqMultiples(test.wholes, test.max)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -127,7 +127,7 @@ func TestSortedMultiplesOKNoRepetitions(t *testing.T) {
 		},
 	} {
 		obtained := []int{}
-		ms, err := sortedMultiples(test.wholes, test.max)
+		ms, err := uniqMultiples(test.wholes, test.max)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -143,7 +143,7 @@ func TestSortedMultiplesOKNoRepetitions(t *testing.T) {
 	}
 }
 
-func TestSum(t *testing.T) {
+func TestSumMultiplesOf(t *testing.T) {
 	for _, test := range [...]struct {
 		wholes   []int
 		max      int
@@ -179,7 +179,7 @@ func TestSum(t *testing.T) {
 			expected: 233168,
 		},
 	} {
-		obtained, err := sum(test.wholes, test.max)
+		obtained, err := sumUniqMultiplesOf(test.wholes, test.max)
 		if err != nil {
 			t.Errorf("wholes = %v, max = %d\nexpected = %v\nerror = %v\n",
 				test.wholes, test.max, test.expected, err)
