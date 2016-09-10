@@ -16,12 +16,13 @@ func main() {
 
 // Returns the sum of all non repeted multiples of bases lower than max.
 //
-// For example: sumMultiplesOf([]int{3, 4}, 16) would be the sum of:
+// For example: sumMultiplesOf([]int{3, 5}, 18) would be 60, this is,
+// the sum of:
 //
-// - 3, 6, 9, 12 (multiples of 3 lower than 16)
+// - 3, 6, 9, 12, 15 (multiples of 3 lower than 18)
 //
-// - and 4, 8 (multiples of 4 lower than 16, not counting 12, as it is
-//   already a multiple of 3).
+// - and 5, 10 (multiples of 5 lower than 18, not counting 15, as it is
+// already a multiple of 3).
 //
 // Returns an error if any of the bases is less than 1 or if max is
 // negative.
