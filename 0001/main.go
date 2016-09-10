@@ -34,8 +34,10 @@ func sumUniqMultiples(bases []int, max int) (int, error) {
 		return 0, err
 	}
 
+	ms := multiplesForAll(bases, max)
+
 	s := 0
-	for n := range uniqMultiples(bases, max) {
+	for n := range uniqOfSorted(ms) {
 		s += n
 	}
 
@@ -58,27 +60,18 @@ func checkMax(m int) error {
 	return nil
 }
 
-// Returns a channel to receive the multiples of every element of
-// countings, up to, and not including, max.  The numbers are received in
-// increasing order and there will be no repetitions.  The channel is
-// closed at the end.
-//
-// Example: sliceMultiples([]int{3, 5}, 20) will return a channel with
-// the numbers 3, 5, 6, 9, 10, 12, 15 and 18 in this same order.  Note
-// how only one 15 is received even though 15 is multiple of both 3 and
-// 5.
-func uniqMultiples(countings []int, max int) <-chan int {
-	ms := multiplesForAll(countings, max)
-
+// Returns a channel of uniq and sorted integers that are the result of
+// merging the contents of a slice of channels with sorted integers.
+func uniqOfSorted(cs []<-chan int) <-chan int {
 	sorted := make(chan int)
 	go func() {
-		heads := make([]int, len(countings))
+		heads := make([]int, len(cs))
 		for {
 			min := 0
 			imin := -1
 			for i, _ := range heads {
 				if heads[i] == 0 {
-					heads[i] = <-ms[i]
+					heads[i] = <-cs[i]
 					if heads[i] == 0 {
 						continue
 					}
