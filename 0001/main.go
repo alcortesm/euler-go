@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-
-	"github.com/alcortesm/euler-go/0001/peek"
 )
 
 func main() {
@@ -16,10 +14,6 @@ func main() {
 	fmt.Println(s)
 }
 
-// Returns the sum of all unique multiples, lower than max,  of the numbers in bases.
-// Example: sumUniqMultiples([]int{3, 5}, 18) would be 60 (3+5+6+9+10+12+15).
-// Returns an error if any of the bases is less than 1 or if max is
-// negative.
 func sumUniqMultiples(bases []int, max int) (int, error) {
 	if err := checkBases(bases); err != nil {
 		return 0, err
@@ -28,10 +22,75 @@ func sumUniqMultiples(bases []int, max int) (int, error) {
 		return 0, err
 	}
 
-	ms := allMultiples(bases, max)
-	u := uniq(ms)
-	s := sum(u)
+	s := 0
+	multiples := make([]int, len(bases))
+	factors := ones(uint(len(bases)))
+	const unknown = 0
+
+	//fmt.Println(" - - - - - - SOLUTION", bases, max)
+	for {
+		pending := false
+		//fmt.Println("before", multiples, bases, factors)
+		for i, m := range multiples {
+			//fmt.Println("inner", i, m)
+			switch {
+			case m >= max:
+				continue
+			case m == unknown:
+				multiples[i] = bases[i] * factors[i]
+				if multiples[i] < max {
+					factors[i]++
+					pending = true
+				}
+			default:
+				pending = true
+			}
+		}
+		//fmt.Println("after", multiples, bases, pending)
+		if !pending {
+			break
+		}
+		ixs, v := mins(multiples)
+		//fmt.Println("mins", ixs, v)
+		s += v
+		for _, i := range ixs {
+			multiples[i] = unknown
+		}
+	}
 	return s, nil
+}
+
+// Ones returns a slice with n ones.
+func ones(n uint) []int {
+	ret := make([]int, int(n))
+	for i := range ret {
+		ret[i] = 1
+	}
+	return ret
+}
+
+// Mins returns the indexes and the value of the minimum number in s.
+// If s has zero length, it will return nil and 0.
+//
+// For example: if s = {5, 3, 7, 12, 3, 5}, min(s) will return
+// the indexes {1, 4} and the value 3.
+func mins(s []int) ([]int, int) {
+	if len(s) == 0 {
+		return nil, 0
+	}
+	is := []int{0}
+	v := s[0]
+	for i, e := range s[1:] {
+		if e == v {
+			is = append(is, i+1)
+			continue
+		}
+		if e < v {
+			is = []int{i + 1}
+			v = e
+		}
+	}
+	return is, v
 }
 
 func checkBases(bases []int) error {
@@ -48,104 +107,4 @@ func checkMax(m int) error {
 		return fmt.Errorf("invalid max %d: cannot be negative", m)
 	}
 	return nil
-}
-
-func allMultiples(bases []int, max int) []<-chan int {
-	ms := make([]<-chan int, 0, len(bases))
-	for _, b := range bases {
-		c := multiples(b, max)
-		ms = append(ms, c)
-	}
-	return ms
-}
-
-// Returns a channel and sends over it all the multiples of base, lower
-// than max, in ascending order.  Closes the channel when done.
-func multiples(base int, max int) <-chan int {
-	multiples := make(chan int)
-	go func() {
-		i := 1
-		for {
-			m := i * base
-			if m >= max {
-				break
-			}
-			multiples <- m
-			i++
-		}
-		close(multiples)
-	}()
-	return multiples
-}
-
-// Returns a channel of unique integers comming form a slice of channels
-// of sorted integers.
-func uniq(cs []<-chan int) <-chan int {
-	ps := peekersFromChannels(cs)
-	ret := make(chan int)
-	go func() {
-		first := true
-		var last int
-		for {
-			ps = removeEmpties(ps)
-			if len(ps) == 0 {
-				break
-			}
-			i := indexOfMin(ps)
-			n, _ := ps[i].Recv()
-			if first {
-				first = false
-				last = n
-				ret <- n
-				continue
-			}
-			if n != last {
-				last = n
-				ret <- n
-			}
-		}
-		close(ret)
-	}()
-	return ret
-}
-
-func peekersFromChannels(cs []<-chan int) []peek.Peeker {
-	ps := make([]peek.Peeker, len(cs))
-	for i, c := range cs {
-		ps[i] = peek.NewChannel(c)
-	}
-	return ps
-}
-
-func removeEmpties(ps []peek.Peeker) []peek.Peeker {
-	ret := make([]peek.Peeker, 0, len(ps))
-	for _, p := range ps {
-		if _, ok := p.Peek(); ok {
-			ret = append(ret, p)
-		}
-	}
-	return ret
-}
-
-// take a non empty slice of non empty peekers and returns the index of
-// the peeker with the smallest integer.
-func indexOfMin(ps []peek.Peeker) int {
-	min, _ := ps[0].Peek()
-	imin := 0
-	for i := 1; i < len(ps); i++ {
-		n, _ := ps[i].Peek()
-		if n < min {
-			min = n
-			imin = i
-		}
-	}
-	return imin
-}
-
-func sum(c <-chan int) int {
-	s := 0
-	for n := range c {
-		s += n
-	}
-	return s
 }
