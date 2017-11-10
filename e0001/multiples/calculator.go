@@ -5,17 +5,9 @@ package multiples
 
 import "fmt"
 
-// Calculator generates multiples according to the package description.
-// Its zero value is not safe, use the New function as a constructor.
-type calculator struct {
-	bases     []int
-	max       int
-	factors   []int
-	multiples []int
-}
-
-// Calculator runs a new multiple calculator and returns a channel
-// where it will send the multiples and a nil errors.
+// Calculator runs a gorutine that will calculate multiples as explained
+// in the package description.  It returns a channel where the multiples
+// are sent.
 //
 // The numbers in bases will be used as the originators
 // of the multiples to calculate.
@@ -69,6 +61,21 @@ func checkMax(m int) error {
 	return nil
 }
 
+type calculator struct {
+	bases []int
+	max   int
+	// the factors to use to generate the next multiples from each base.
+	factors []int
+	// the smallest multiples for each base that has not yet being send
+	// over the channel.  The special value `toBeCalculated` will be used
+	// when a multiple has just been sent but the next one has not jet been
+	// calculated.  When all multiples here are >= max, the calculation
+	// has to end.
+	multiples []int
+}
+
+const toBeCalculated = 0
+
 // Ones returns a slice with n ones.
 func ones(n uint) []int {
 	ret := make([]int, int(n))
@@ -78,34 +85,48 @@ func ones(n uint) []int {
 	return ret
 }
 
-const unknown = 0
-
 // Next return the next multiple and true.  If there are no more multiples
 // smaller than the calculator maximum, it will return 0 and false.
 func (c *calculator) next() (int, bool) {
+	// are there still numbers to return or have we reached the max on with all bases?
 	pending := false
 	for i, m := range c.multiples {
 		switch {
 		case m >= c.max:
+			// ignore this multiple as it is already >= max
 			continue
-		case m == unknown:
+		case m == toBeCalculated:
+			// a multiple that has just been sent or was a duplicated
+			// of the one that has just been sent.  In either case,
+			// the next multiple for its corresponding base and factor
+			// has to be calculated.
 			c.multiples[i] = c.bases[i] * c.factors[i]
+			// if the generated multiple is below max, increment
+			// its corresponding factor for the next round and
+			// set the pending flag so we know there are new
+			// data to be returned.
 			if c.multiples[i] < c.max {
 				c.factors[i]++
 				pending = true
 			}
 		default:
+			// a multiple that was generated in the previous runs
+			// and is waiting its turn to be returned.
 			pending = true
 		}
 	}
 	if !pending {
 		return 0, false
 	}
-	ixs, v := mins(c.multiples)
-	for _, i := range ixs {
-		c.multiples[i] = unknown
+	// find smallest multiple and its duplicates.
+	// return its value and set them all to `toBeCalculated`
+	// so we can generate the next multiples for each curresponding
+	// base in the next iteration.
+	indexIncludingDuplicates, value := mins(c.multiples)
+	for _, i := range indexIncludingDuplicates {
+		c.multiples[i] = toBeCalculated
 	}
-	return v, pending
+	return value, pending
 }
 
 // Mins returns the indexes and the value of the minimum number in s.
