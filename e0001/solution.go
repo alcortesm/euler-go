@@ -1,20 +1,10 @@
-package main
+package e0001
 
 import (
 	"fmt"
-	"log"
 )
 
-func main() {
-	s, err := sumUniqMultiples([]int{3, 5}, 1000)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(s)
-}
-
-func sumUniqMultiples(bases []int, max int) (int, error) {
+func Solution(bases []int, max int) (int, error) {
 	if err := checkBases(bases); err != nil {
 		return 0, err
 	}
