@@ -77,3 +77,21 @@ func TestSumUniqMultiplesErrorInvalidBases(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkSumUniqMultiples1k(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		sumUniqMultiples([]int{3, 5}, 1000)
+	}
+}
+
+func BenchmarkSumUniqMultiples10k(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		sumUniqMultiples([]int{3, 5}, 10000)
+	}
+}
+
+func BenchmarkSumUniqMultiples100k(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		sumUniqMultiples([]int{3, 5}, 100000)
+	}
+}
