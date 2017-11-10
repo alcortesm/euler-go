@@ -7,30 +7,50 @@ import "fmt"
 
 // Calculator generates multiples according to the package description.
 // Its zero value is not safe, use the New function as a constructor.
-type Calculator struct {
+type calculator struct {
 	bases     []int
 	max       int
 	factors   []int
 	multiples []int
 }
 
-// NewCalculator returns a new calculator.  The numbers in bases will be used as the originators
-// of the multiples to calculate.  The calculator will stop calculating multiples when
-// it reaches the max value, not including it in the results.
-// If the numbers in bases or max are not positive it will return an error.
-func NewCalculator(bases []int, max int) (*Calculator, error) {
+// Calculator runs a new multiple calculator and returns a channel
+// where it will send the multiples and a nil errors.
+//
+// The numbers in bases will be used as the originators
+// of the multiples to calculate.
+//
+// The calculator will stop and close the channel once it reaches
+// a number bigger or equal to the max value, that will not be
+// included in the results.
+//
+// If the numbers in bases or max are not positive it will return
+// a nil channel and an error.
+func Calculator(bases []int, max int) (<-chan int, error) {
 	if err := checkBases(bases); err != nil {
 		return nil, err
 	}
 	if err := checkMax(max); err != nil {
 		return nil, err
 	}
-	return &Calculator{
+	c := calculator{
 		bases:     bases,
 		max:       max,
 		factors:   ones(uint(len(bases))),
 		multiples: make([]int, len(bases)),
-	}, nil
+	}
+	ret := make(chan int)
+	go func() {
+		defer close(ret)
+		for {
+			n, ok := c.next()
+			if !ok {
+				break
+			}
+			ret <- n
+		}
+	}()
+	return ret, nil
 }
 
 func checkBases(bases []int) error {
@@ -62,7 +82,7 @@ const unknown = 0
 
 // Next return the next multiple and true.  If there are no more multiples
 // smaller than the calculator maximum, it will return 0 and false.
-func (c *Calculator) Next() (int, bool) {
+func (c *calculator) next() (int, bool) {
 	pending := false
 	for i, m := range c.multiples {
 		switch {

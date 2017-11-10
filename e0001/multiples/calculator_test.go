@@ -1,15 +1,17 @@
-package multiples
+package multiples_test
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/alcortesm/euler-go/e0001/multiples"
 )
 
 func TestNewErrorInvalidMax(t *testing.T) {
 	for _, max := range []int{0, -1, -10} {
 		name := fmt.Sprintf("max=%v", max)
 		t.Run(name, func(t *testing.T) {
-			if _, err := NewCalculator([]int{1, 2}, 0); err == nil {
+			if _, err := multiples.Calculator([]int{1, 2}, 0); err == nil {
 				t.Errorf("expected an error, but no error found")
 			}
 		})
@@ -37,7 +39,7 @@ func TestNewErrorInvalidBases(t *testing.T) {
 			bases: []int{1, 5, 3, -1}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := NewCalculator(tt.bases, 10); err == nil {
+			if _, err := multiples.Calculator(tt.bases, 10); err == nil {
 				t.Errorf("expected an error, but no error found")
 			}
 		})
@@ -124,12 +126,12 @@ func TestCalculator(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			c, err := NewCalculator(tt.bases, tt.max)
+			c, err := multiples.Calculator(tt.bases, tt.max)
 			if err != nil {
 				t.Fatalf("cannot create calculator: %v", err)
 			}
 			for i, e := range tt.expected {
-				obtained, ok := c.Next()
+				obtained, ok := <-c
 				if !ok {
 					t.Errorf("calculator is empty prematurely at `next` call #%d", i+1)
 				}
@@ -137,7 +139,7 @@ func TestCalculator(t *testing.T) {
 					t.Errorf("expected #%d value was %d, but got %d", i+1, e, obtained)
 				}
 			}
-			if obtained, ok := c.Next(); ok {
+			if obtained, ok := <-c; ok {
 				t.Errorf("calculator should be empty, but it return a number (%d)", obtained)
 			}
 		})
