@@ -123,6 +123,11 @@ func TestCalculator(t *testing.T) {
 			bases:    []int{3, 5, 11, 2},
 			max:      7,
 			expected: []int{2, 3, 4, 5, 6},
+		}, {
+			name:     "lots of multiples in the bases",
+			bases:    []int{2, 4, 8},
+			max:      13,
+			expected: []int{2, 4, 6, 8, 10, 12},
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
