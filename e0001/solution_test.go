@@ -32,3 +32,15 @@ func BenchmarkSolutionMaxIs100k(b *testing.B) {
 		solution([]int{3, 5}, 100000)
 	}
 }
+
+func BenchmarkSolutionManyMultiplesInBases(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		solution([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}, 10000)
+	}
+}
+
+func BenchmarkSolutionNOMultiplesInBases(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		solution([]int{1}, 10000)
+	}
+}
