@@ -3,7 +3,10 @@
 // order and with no duplicates.
 package multiples
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 // Calculator runs a gorutine that will calculate multiples as explained
 // in the package description.  It returns a channel where the multiples
@@ -25,11 +28,12 @@ func Calculator(bases []int, max int) (<-chan int, error) {
 	if err := checkMax(max); err != nil {
 		return nil, err
 	}
+	clean := cleanBases(bases)
 	c := calculator{
-		bases:     bases,
+		bases:     clean,
 		max:       max,
-		factors:   ones(uint(len(bases))),
-		multiples: make([]int, len(bases)),
+		factors:   ones(uint(len(clean))),
+		multiples: make([]int, len(clean)),
 	}
 	ret := make(chan int)
 	go func() {
@@ -59,6 +63,38 @@ func checkMax(m int) error {
 		return fmt.Errorf("invalid max (%d): it is not positive", m)
 	}
 	return nil
+}
+
+func cleanBases(bases []int) []int {
+	if len(bases) < 2 {
+		return bases
+	}
+	sorted := dup(bases)
+	sort.Sort(sort.IntSlice(sorted))
+	ret := make([]int, 1)
+	ret[0] = sorted[0]
+	for _, e := range sorted[1:] {
+		if isMultiple(e, ret) {
+			continue
+		}
+		ret = append(ret, e)
+	}
+	return ret
+}
+
+func dup(s []int) []int {
+	d := make([]int, len(s))
+	copy(d, s)
+	return d
+}
+
+func isMultiple(x int, s []int) bool {
+	for _, e := range s {
+		if x%e == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 type calculator struct {
