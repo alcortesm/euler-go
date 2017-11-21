@@ -2,6 +2,7 @@
 // returning the data gathered in different ways.
 package sink
 
+// ToSlice returns a slice with all the numbers in the given channel.
 func ToSlice(ch <-chan int) []int {
 	ret := []int{}
 	for n := range ch {
@@ -10,6 +11,7 @@ func ToSlice(ch <-chan int) []int {
 	return ret
 }
 
+// Sum returns the sum of the numbers in the given channel.
 func Sum(ch <-chan int) int {
 	sum := 0
 	for n := range ch {

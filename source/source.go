@@ -2,6 +2,7 @@
 // over which finite sequences of numbers will be sent.
 package source
 
+// FromSlice returns a channel with the number in the given slice.
 func FromSlice(s []int) <-chan int {
 	ch := make(chan int)
 	go func() {
