@@ -1,23 +1,19 @@
 package e0002
 
+import (
+	"github.com/alcortesm/euler-go/filter"
+	"github.com/alcortesm/euler-go/sink"
+	"github.com/alcortesm/euler-go/source"
+)
+
 // Solution returns the solution to problem 2
 func Solution() int {
 	return solution(4000000)
 }
 
 func solution(ceil int) int {
-	return sum(keepEven(fib(ceil)))
-}
-
-func fib(ceil int) <-chan int {
-	ch := make(chan int)
-	go func() {
-		for a, b := 1, 1; b < ceil; a, b = b, a+b {
-			ch <- b
-		}
-		close(ch)
-	}()
-	return ch
+	fibFrom2 := filter.Drop(1, source.Fib(ceil))
+	return sink.Sum(keepEven(fibFrom2))
 }
 
 func keepEven(input <-chan int) <-chan int {
@@ -31,12 +27,4 @@ func keepEven(input <-chan int) <-chan int {
 		close(output)
 	}()
 	return output
-}
-
-func sum(input <-chan int) int {
-	sum := 0
-	for n := range input {
-		sum += n
-	}
-	return sum
 }
