@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/alcortesm/euler-go/sink"
+	"github.com/alcortesm/euler-go/source"
 )
 
 func TestSolution(t *testing.T) {
@@ -89,10 +92,7 @@ func TestFib(t *testing.T) {
 }
 
 func testFib(t *testing.T, ceil int, expected []int) {
-	obtained := []int{}
-	for n := range fib(ceil) {
-		obtained = append(obtained, n)
-	}
+	obtained := sink.ToSlice(fib(ceil))
 	if !reflect.DeepEqual(obtained, expected) {
 		t.Errorf("expected %v\nobtained %v", expected, obtained)
 	}
@@ -115,30 +115,12 @@ func TestKeepEven(t *testing.T) {
 		{"all together", []int{-2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 1000, 1001, 5, 4, 3, 2, 1}, []int{-2, 0, 2, 4, 6, 1000, 4, 2}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			obtained := sink(keepEven(source(tt.input)))
+			input := source.FromSlice(tt.input)
+			obtained := sink.ToSlice(keepEven(input))
 			if !reflect.DeepEqual(tt.expected, obtained) {
 				t.Errorf("obtained and expected differ:\nexpected = %v\nobtained = %v",
 					tt.expected, obtained)
 			}
 		})
 	}
-}
-
-func source(s []int) <-chan int {
-	ch := make(chan int)
-	go func() {
-		for _, n := range s {
-			ch <- n
-		}
-		close(ch)
-	}()
-	return ch
-}
-
-func sink(ch <-chan int) []int {
-	s := []int{}
-	for n := range ch {
-		s = append(s, n)
-	}
-	return s
 }
