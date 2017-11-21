@@ -27,3 +27,24 @@ func TestToSlice(t *testing.T) {
 		})
 	}
 }
+
+func TestSum(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		input    []int
+		expected int
+	}{
+		{name: "empty", input: []int{}, expected: 0},
+		{name: "one element", input: []int{1}, expected: 1},
+		{name: "two elements", input: []int{1, 2}, expected: 3},
+		{name: "two negated elements", input: []int{42, -42}, expected: 0},
+		{name: "many elements", input: []int{100, -12, 42}, expected: 130},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			obtained := sink.Sum(source.FromSlice(tt.input))
+			if obtained != tt.expected {
+				t.Errorf("expected: %v, obtained: %v", tt.expected, obtained)
+			}
+		})
+	}
+}

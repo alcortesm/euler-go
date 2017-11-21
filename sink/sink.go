@@ -9,3 +9,11 @@ func ToSlice(ch <-chan int) []int {
 	}
 	return ret
 }
+
+func Sum(ch <-chan int) int {
+	sum := 0
+	for n := range ch {
+		sum += n
+	}
+	return sum
+}

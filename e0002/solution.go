@@ -1,12 +1,14 @@
 package e0002
 
+import "github.com/alcortesm/euler-go/sink"
+
 // Solution returns the solution to problem 2
 func Solution() int {
 	return solution(4000000)
 }
 
 func solution(ceil int) int {
-	return sum(keepEven(fib(ceil)))
+	return sink.Sum(keepEven(fib(ceil)))
 }
 
 func fib(ceil int) <-chan int {
@@ -31,12 +33,4 @@ func keepEven(input <-chan int) <-chan int {
 		close(output)
 	}()
 	return output
-}
-
-func sum(input <-chan int) int {
-	sum := 0
-	for n := range input {
-		sum += n
-	}
-	return sum
 }
